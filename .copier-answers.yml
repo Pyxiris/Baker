@@ -1,0 +1,102 @@
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
+_commit: v9.6.1
+_src_path: https://github.com/Tecnativa/doodba-copier-template
+backup_deletion: false
+backup_dst: boto3+s3://baker-backup
+backup_email_from: backups@bakerlumber.online
+backup_email_to: backups@bakerlumber.online
+backup_image_version: latest
+backup_smtp_report_success: true
+backup_tz: America/Detroit
+cidr_whitelist: null
+compose_version: v2+
+domains_migration:
+  - hosts:
+      - mig.bakerlumber.online
+  - hosts:
+      - www.mig.bakerlumber.online
+    redirect_permanent: true
+    redirect_to: mig.bakerlumber.online
+domains_prod:
+  - hosts:
+      - bakerlumber.online
+  - hosts:
+      - www.bakerlumber.online
+    redirect_permanent: true
+    redirect_to: bakerlumber.online
+domains_test:
+  - hosts:
+      - test.bakerlumber.online
+  - hosts:
+      - www.test.bakerlumber.online
+    redirect_permanent: true
+    redirect_to: test.bakerlumber.online
+gitlab_url: ""
+odoo_dbfilter: ^prod
+odoo_initial_lang: en_US
+odoo_listdb: false
+odoo_listdb_staging: false
+odoo_oci_image: ghcr.io/pyxiris/baker
+odoo_proxy: traefik
+odoo_version: 19.0
+paths_with_crawlers:
+  - /web/image/website
+paths_without_crawlers:
+  - /web
+  - /website/info
+postgres_dbname: prod
+postgres_exposed: false
+postgres_username: odoo
+postgres_version: "18"
+project_author: Liam Noonan
+project_license: LGPL-3.0-or-later
+project_name: Baker
+smtp_canonical_default: bakerlumber.online
+smtp_canonical_domains: []
+smtp_default_from: notifications@bakerlumber.online
+smtp_relay_host: mail.smtp2go.com
+smtp_relay_port: 2525
+smtp_relay_user: bakerlumber.online
+smtp_relay_version: latest
+traefik_version: 3
+use_refurb: true
+whitelist_docker_project_devel: Baker
+whitelist_docker_project_test: demo-Baker-19
+whitelisted_hosts_devel:
+  - cdnjs.cloudflare.com
+  - fonts.googleapis.com
+  - fonts.gstatic.com
+  - www.google.com
+  - www.googleapis.com
+  - www.gravatar.com
+whitelisted_hosts_test:
+  - accounts.google.com
+  - api.openrouteservice.org
+  - api.unsplash.com
+  - apis.google.com
+  - cdnjs.cloudflare.com
+  - download.geonames.org
+  - ec.europa.eu
+  - fonts.cdnfonts.com
+  - fonts.googleapis.com
+  - fonts.gstatic.com
+  - images.unsplash.com
+  - iap-services.odoo.com
+  - maps.googleapis.com
+  - media-api.odoo.com
+  - olg.api.odoo.com
+  - www.google.com
+  - www.googleapis.com
+  - www.gravatar.com
+  - undraw.co
+  - updates.maxmind.com
+  - www.ecb.europa.eu
+  - www.xe.com
+  - sis-t.redsys.es
+  - prewww1.aeat.es
+  - www2.agenciatributaria.gob.es
+  - www.openstreetmap.org
+  - nominatim.openstreetmap.org
+  - www.bizkaia.eus
+  - sii.araba.eus
+  - vies.api.odoo.com

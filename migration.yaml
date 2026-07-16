@@ -1,0 +1,226 @@
+services:
+  odoo:
+    extends:
+      file: common.yaml
+      service: odoo
+    env_file:
+      - .docker/odoo.env
+      - .docker/db-access.env
+    environment:
+      DOODBA_ENVIRONMENT: "${DOODBA_ENVIRONMENT-test}"
+      LIST_DB: "false"
+      ODOO_BUS_PUBLIC_SAMESITE_WS: 1
+      # To install demo data export DOODBA_WITHOUT_DEMO=false
+      WITHOUT_DEMO: "${DOODBA_WITHOUT_DEMO-all}"
+      SMTP_PORT: "1025"
+      SMTP_SERVER: smtplocal
+      # Just in case you use queue_job
+      ODOO_QUEUE_JOB_CHANNELS: "root:1"
+      PGHOST: Baker-19-0-test-db
+    restart: unless-stopped
+    hostname: "mig.bakerlumber.online"
+    depends_on:
+      - db
+      - smtp
+      - proxy_general
+    networks:
+      default:
+      globalwhitelist_shared:
+      inverseproxy_shared:
+      whitelist:
+    labels:
+      doodba.domain.main: "mig.bakerlumber.online"
+      traefik.enable: "true"
+      traefik.domain: "mig.bakerlumber.online"
+      traefik.forbiddenCrawlers-0.frontend.headers.customResponseHeaders:
+        "X-Robots-Tag:noindex, nofollow"
+      traefik.forbiddenCrawlers-0.frontend.rule: Host:mig.bakerlumber.online;Path:/{anything:.*}
+      traefik.longpolling-0.frontend.rule: Host:mig.bakerlumber.online;Path:/websocket,/websocket/{anything:.*}
+      traefik.longpolling-0.port: 8072
+      traefik.alt-1.frontend.redirect.regex: ^(.*)://([^/]+)/(.*)$$
+      traefik.alt-1.frontend.redirect.replacement: $$1://mig.bakerlumber.online/$$3
+      traefik.alt-1.frontend.rule: Host:www.mig.bakerlumber.online
+      traefik.http.middlewares.Baker-19-0-test-override-ws-headers.headers.customRequestHeaders.X-Forwarded-Proto: "https"
+      traefik.http.services.Baker-19-0-test-main.loadbalancer.server.port: 8069
+      traefik.http.services.Baker-19-0-test-longpolling.loadbalancer.server.port: 8072
+      traefik.http.routers.Baker-19-0-test-longpolling-0.rule:
+        Host(`mig.bakerlumber.online`) && Path(`/websocket`)
+      traefik.http.routers.Baker-19-0-test-longpolling-0.service: Baker-19-0-test-longpolling
+      traefik.http.routers.Baker-19-0-test-longpolling-0.middlewares:
+        Baker-19-0-test-addSTS, Baker-19-0-test-forceSecure,
+        Baker-19-0-test-override-ws-headers
+      traefik.http.routers.Baker-19-0-test-longpolling-0.priority: 20
+      traefik.http.routers.Baker-19-0-test-longpolling-secure-0.rule:
+        Host(`mig.bakerlumber.online`) && Path(`/websocket`)
+      traefik.http.routers.Baker-19-0-test-longpolling-secure-0.service: Baker-19-0-test-longpolling
+      traefik.http.routers.Baker-19-0-test-longpolling-secure-0.middlewares:
+        Baker-19-0-test-addSTS, Baker-19-0-test-forceSecure,
+        Baker-19-0-test-override-ws-headers
+      traefik.http.routers.Baker-19-0-test-longpolling-secure-0.priority: 20
+      traefik.http.routers.Baker-19-0-test-longpolling-secure-0.tls: "true"
+      traefik.http.routers.Baker-19-0-test-longpolling-secure-0.tls.certResolver: letsencrypt
+      traefik.http.routers.Baker-19-0-test-forbiddenCrawlers-0.rule:
+        Host(`mig.bakerlumber.online`) && (PathPrefix(`/`))
+      traefik.http.routers.Baker-19-0-test-forbiddenCrawlers-0.service: Baker-19-0-test-main
+      traefik.http.routers.Baker-19-0-test-forbiddenCrawlers-0.middlewares:
+        Baker-19-0-test-addSTS, Baker-19-0-test-buffering, Baker-19-0-test-compress,
+        Baker-19-0-test-forbid-crawlers, Baker-19-0-test-forceSecure
+      traefik.http.routers.Baker-19-0-test-forbiddenCrawlers-0.priority: 10
+      traefik.http.routers.Baker-19-0-test-forbiddenCrawlers-secure-0.rule:
+        Host(`mig.bakerlumber.online`) && (PathPrefix(`/`))
+      traefik.http.routers.Baker-19-0-test-forbiddenCrawlers-secure-0.service: Baker-19-0-test-main
+      traefik.http.routers.Baker-19-0-test-forbiddenCrawlers-secure-0.middlewares:
+        Baker-19-0-test-addSTS, Baker-19-0-test-buffering, Baker-19-0-test-compress,
+        Baker-19-0-test-forbid-crawlers, Baker-19-0-test-forceSecure
+      traefik.http.routers.Baker-19-0-test-forbiddenCrawlers-secure-0.priority: 10
+      traefik.http.routers.Baker-19-0-test-forbiddenCrawlers-secure-0.tls: "true"
+      traefik.http.routers.Baker-19-0-test-forbiddenCrawlers-secure-0.tls.certResolver: letsencrypt
+      traefik.http.middlewares.Baker-19-0-test-redirect-1.redirectRegex.permanent: "true"
+      traefik.http.middlewares.Baker-19-0-test-redirect-1.redirectRegex.regex: ^(.*)://([^/]+)/(.*)$$
+      traefik.http.middlewares.Baker-19-0-test-redirect-1.redirectRegex.replacement: $$1://mig.bakerlumber.online/$$3
+      traefik.http.routers.Baker-19-0-test-redirect-1.rule: Host(`www.mig.bakerlumber.online`)
+      traefik.http.routers.Baker-19-0-test-redirect-1.service: Baker-19-0-test-main
+      traefik.http.routers.Baker-19-0-test-redirect-1.middlewares:
+        Baker-19-0-test-addSTS, Baker-19-0-test-compress, Baker-19-0-test-forceSecure,
+        Baker-19-0-test-redirect-1
+      traefik.http.routers.Baker-19-0-test-redirect-1.priority: 10
+      traefik.http.routers.Baker-19-0-test-redirect-secure-1.rule: Host(`www.mig.bakerlumber.online`)
+      traefik.http.routers.Baker-19-0-test-redirect-secure-1.service: Baker-19-0-test-main
+      traefik.http.routers.Baker-19-0-test-redirect-secure-1.middlewares:
+        Baker-19-0-test-addSTS, Baker-19-0-test-compress, Baker-19-0-test-forceSecure,
+        Baker-19-0-test-redirect-1
+      traefik.http.routers.Baker-19-0-test-redirect-secure-1.priority: 10
+      traefik.http.routers.Baker-19-0-test-redirect-secure-1.tls: "true"
+      traefik.http.routers.Baker-19-0-test-redirect-secure-1.tls.certResolver: letsencrypt
+    command:
+      - odoo
+      - --workers=3
+      - --max-cron-threads=1
+
+  db:
+    extends:
+      file: common.yaml
+      service: db
+    environment:
+      DB_HOST: Baker-19-0-test-db
+    env_file:
+      - .docker/db-creation.env
+    networks:
+      default:
+        aliases:
+          - "Baker-19-0-test-db"
+    restart: unless-stopped
+
+  smtp:
+    extends:
+      file: common.yaml
+      service: smtpfake
+    restart: unless-stopped
+    networks:
+      default:
+        aliases:
+          - smtplocal
+      inverseproxy_shared:
+    labels:
+      doodba.domain.main: "mig.bakerlumber.online"
+      traefik.docker.network: "inverseproxy_shared"
+      traefik.enable: "true"
+      traefik.frontend.passHostHeader: "true"
+      traefik.mailhog-0.frontend.rule: Host:mig.bakerlumber.online;PathPrefixStrip:/smtpfake/
+      traefik.mailhog-0.port: 8025
+      # Mailhog service
+      traefik.http.middlewares.Baker-19-0-test-mailhog-stripprefix.stripPrefix.prefixes: /smtpfake/
+      traefik.http.services.Baker-19-0-test-mailhog.loadbalancer.server.port: 8025
+      traefik.http.middlewares.Baker-19-0-test-buffering.buffering.retryExpression:
+        IsNetworkError() && Attempts() < 5
+      traefik.http.middlewares.Baker-19-0-test-compress.compress: "true"
+      traefik.http.middlewares.Baker-19-0-test-forbid-crawlers.headers.customResponseHeaders.X-Robots-Tag:
+        "noindex, nofollow"
+      traefik.http.middlewares.Baker-19-0-test-addSTS.headers.forceSTSHeader: "true"
+      traefik.http.middlewares.Baker-19-0-test-forceSecure.redirectScheme.scheme: https
+      traefik.http.middlewares.Baker-19-0-test-forceSecure.redirectScheme.permanent: "true"
+      traefik.http.routers.Baker-19-0-test-mailhog-0.rule:
+        Host(`mig.bakerlumber.online`) && PathPrefix(`/smtpfake/`)
+      traefik.http.routers.Baker-19-0-test-mailhog-0.service: Baker-19-0-test-mailhog
+      traefik.http.routers.Baker-19-0-test-mailhog-0.middlewares:
+        Baker-19-0-test-addSTS, Baker-19-0-test-buffering, Baker-19-0-test-compress,
+        Baker-19-0-test-forbid-crawlers, Baker-19-0-test-forceSecure,
+        Baker-19-0-test-mailhog-stripprefix
+      traefik.http.routers.Baker-19-0-test-mailhog-secure-0.rule:
+        Host(`mig.bakerlumber.online`) && PathPrefix(`/smtpfake/`)
+      traefik.http.routers.Baker-19-0-test-mailhog-secure-0.service: Baker-19-0-test-mailhog
+      traefik.http.routers.Baker-19-0-test-mailhog-secure-0.middlewares:
+        Baker-19-0-test-addSTS, Baker-19-0-test-buffering, Baker-19-0-test-compress,
+        Baker-19-0-test-forbid-crawlers, Baker-19-0-test-forceSecure,
+        Baker-19-0-test-mailhog-stripprefix
+      traefik.http.routers.Baker-19-0-test-mailhog-secure-0.tls: "true"
+      traefik.http.routers.Baker-19-0-test-mailhog-secure-0.tls.certResolver: letsencrypt
+    volumes:
+      - "smtpconf:/etc/mailhog:ro"
+    entrypoint: [sh, -c]
+    command:
+      - test -r /etc/mailhog/auth && export MH_AUTH_FILE=/etc/mailhog/auth; exec MailHog
+
+  odoo_net_setup:
+    image: ghcr.io/tecnativa/docker-whitelist-gateway-service:edge
+    network_mode: "service:odoo"
+    cap_add:
+      - NET_ADMIN
+    depends_on:
+      - odoo
+      - proxy_general
+    healthcheck:
+      disable: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      MODE_RUN: "net_setup"
+      GATEWAY_NAME: "proxy_general"
+      DNS_LOCAL: "1"
+      DNS_INTERNAL_FROM_DOCKER: "1"
+      DOCKER_PROJECT: "${COMPOSE_PROJECT_NAME:-demo-Baker-19}"
+      DOCKER_PRIMARY_SERVICE: "odoo"
+      ALLOWED_HOSTS: &proxy_allowed_hosts >-
+        accounts.google.com api.openrouteservice.org api.unsplash.com apis.google.com
+        cdnjs.cloudflare.com download.geonames.org ec.europa.eu fonts.cdnfonts.com
+        fonts.googleapis.com fonts.gstatic.com images.unsplash.com iap-services.odoo.com
+        maps.googleapis.com media-api.odoo.com olg.api.odoo.com www.google.com
+        www.googleapis.com www.gravatar.com undraw.co updates.maxmind.com
+        www.ecb.europa.eu www.xe.com sis-t.redsys.es prewww1.aeat.es
+        www2.agenciatributaria.gob.es www.openstreetmap.org nominatim.openstreetmap.org
+        www.bizkaia.eus sii.araba.eus vies.api.odoo.com
+
+  proxy_general:
+    image: ghcr.io/tecnativa/docker-whitelist-gateway-service:edge
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      net.ipv4.ip_forward: "1"
+    networks:
+      whitelist:
+        aliases:
+          - proxy_general
+      public:
+    environment:
+      MODE_RUN: "gateway"
+      ALLOWED_HOSTS: *proxy_allowed_hosts
+
+networks:
+  default:
+    internal: ${DOODBA_NETWORK_INTERNAL-true}
+    driver_opts:
+      encrypted: 1
+
+  globalwhitelist_shared:
+    external: true
+
+  inverseproxy_shared:
+    external: true
+  public:
+  whitelist:
+
+volumes:
+  filestore:
+  db:
+  smtpconf:

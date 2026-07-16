@@ -1,0 +1,84 @@
+services:
+  odoo:
+    image: ghcr.io/pyxiris/baker:19.0
+    build:
+      context: ./odoo
+      args:
+        DB_VERSION: "18"
+        ODOO_VERSION: "19.0"
+        UID: "${UID:-1000}"
+        GID: "${GID:-1000}"
+    environment:
+      EMAIL_FROM: "notifications@bakerlumber.online"
+      PGDATABASE: &dbname prod
+      PGUSER: &dbuser "odoo"
+      PROXY_MODE: "true"
+    tty: true
+    volumes:
+      - filestore:/var/lib/odoo
+    labels:
+      traefik.backend.buffering.retryExpression: IsNetworkError() && Attempts() < 5
+      traefik.docker.network: "inverseproxy_shared"
+      traefik.frontend.passHostHeader: "true"
+      traefik.port: "8069"
+
+  db:
+    image: ghcr.io/tecnativa/postgres-autoconf:18-alpine
+    shm_size: 4gb
+    environment:
+      POSTGRES_DB: *dbname
+      POSTGRES_USER: *dbuser
+      PGDATA: "/var/lib/postgresql/data"
+      CONF_EXTRA: |
+        work_mem = 512MB
+    volumes:
+      - db:/var/lib/postgresql/data
+
+  smtpfake:
+    image: docker.io/mailhog/mailhog
+
+  smtpreal:
+    image: ghcr.io/docker-mailserver/docker-mailserver:latest
+    hostname: "smtp.bakerlumber.online"
+    stop_grace_period: 1m
+    volumes:
+      - mailconfig:/tmp/docker-mailserver
+      - maildata:/var/mail
+      - maillogs:/var/log/mail
+      - maillogssupervisord:/var/log/supervisor
+      - mailstate:/var/mail-state
+    cap_add:
+      - SYS_PTRACE
+    environment:
+      DEFAULT_RELAY_HOST: "[mail.smtp2go.com]:2525"
+      DMS_DEBUG: 0
+      ENABLE_SRS: 1
+      ONE_DIR: 1
+      PERMIT_DOCKER: connected-networks
+      POSTFIX_INET_PROTOCOLS: ipv4
+      POSTFIX_MESSAGE_SIZE_LIMIT: 52428800 # 50 MiB
+      RELAY_HOST: "mail.smtp2go.com"
+      RELAY_PORT: "2525"
+      RELAY_USER: "bakerlumber.online"
+      SMTP_ONLY: 1
+      SRS_DOMAINNAME: "bakerlumber.online"
+      SRS_EXCLUDE_DOMAINS: "bakerlumber.online"
+      SRS_SENDER_CLASSES: envelope_sender,header_sender
+
+  backup:
+    image: ghcr.io/tecnativa/docker-duplicity-postgres-s3:latest
+    hostname: backup.bakerlumber.online
+    init: true
+    environment:
+      DB_VERSION: "18"
+      DBS_TO_INCLUDE: "^prod"
+      DST: "boto3+s3://baker-backup"
+      EMAIL_FROM: "backups@bakerlumber.online"
+      EMAIL_TO: "backups@bakerlumber.online"
+      PGDATABASE: *dbname
+      PGUSER: *dbuser
+      SMTP_HOST: smtplocal
+      TZ: "America/Detroit"
+    volumes:
+      - backup_cache:/root
+      - filestore:/mnt/backup/src/odoo
