@@ -26,6 +26,9 @@
 /doodba.*.code-workspace
 /src
 .idea/*
+.aiignore
+.aiexclude
+.cursorignore
 
 # Project-specific docker configurations
 /.docker/
