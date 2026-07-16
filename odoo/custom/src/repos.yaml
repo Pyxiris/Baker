@@ -4,13 +4,61 @@
     # Shallow repositories ($DEPTH_DEFAULT=1) are faster & thinner
     # You may need a bigger depth when merging PRs (use $DEPTH_MERGE
     # for a sane value of 100 commits)
-    depth: $DEPTH_DEFAULT
+    depth: 100
   remotes:
     ocb: https://github.com/OCA/OCB.git
     odoo: https://github.com/odoo/odoo.git
-    openupgrade: https://github.com/OCA/OpenUpgrade.git
-  target: ocb $ODOO_VERSION
+    # openupgrade: https://github.com/OCA/OpenUpgrade.git
+    px-odoo: https://github.com/Pyxiris/odoo.git
+
+  target: agg
   merges:
     - ocb $ODOO_VERSION
-    # Example of a merge of the PR with the number <PR>
-    # - oca refs/pull/<PR>/head
+    - odoo $ODOO_VERSION
+    - px-odoo $ODOO_VERSION
+    - px-odoo 19.0-always_handle_notifications_in_odoo
+    - px-odoo 19.0-backport-checkbox-improvements-autopatch
+    - px-odoo 19.0-mail_disable_relay_notification
+    - px-odoo 19.0-search-both-directions-autopatch # https://github.com/odoo/odoo/pull/276138 merged in odoo master (20.0). Patch for 19.0 only.
+    - px-odoo 19.0-web-bring-back-print-button
+
+./crm:
+  defaults:
+    depth: 100
+  remotes:
+    oca-crm: https://github.com/OCA/crm.git
+    px-crm: https://github.com/Pyxiris/crm.git
+  target: agg
+  merges:
+    - oca-crm $ODOO_VERSION
+
+./server-brand:
+  defaults:
+    depth: 100
+  remotes:
+    oca-server-brand: https://github.com/OCA/server-brand.git
+  target: agg
+  merges:
+    - oca-server-brand $ODOO_VERSION
+
+./social:
+  defaults:
+    depth: 100
+  remotes:
+    oca-social: https://github.com/OCA/social.git
+    px-social: https://github.com/Pyxiris/social.git
+  target: agg
+  merges:
+    - oca-social $ODOO_VERSION
+    - px-social 19.0-mail_plugin_inject_raw
+
+./web:
+  defaults:
+    depth: 100
+  remotes:
+    oca-web: https://github.com/OCA/web.git
+    px-web: https://github.com/Pyxiris/web.git
+  target: agg
+  merges:
+    - oca-web $ODOO_VERSION
+    - px-web 19.0-web_responsive_cleanup

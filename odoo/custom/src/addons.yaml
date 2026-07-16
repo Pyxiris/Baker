@@ -1,0 +1,30 @@
+./odoo/addons:
+  - crm
+  - hr_attendance
+  - hr_calendar
+  - hr_expense
+  - hr_holidays
+  - hr_skills
+  - project
+  - website_cf_turnstile
+
+./crm:
+  - crm_project_task
+
+./server-brand:
+  - disable_odoo_online
+  - mail_debranding
+  - portal_debranding
+  - remove_odoo_enterprise
+  - website_debranding
+
+./social:
+  - mail_plugin_inject_raw
+
+./web:
+  - web_dark_mode
+  - web_favicon
+  - web_refresher
+  - web_remember_tree_column_width
+  - web_responsive
+  - web_theme_classic
